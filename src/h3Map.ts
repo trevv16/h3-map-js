@@ -1,11 +1,7 @@
-import { geoToH3 } from 'h3-js';
+import { geoToH3, polyfill } from 'h3-js';
 import { ILatLng, IBounds, H3Set, Coordinates, H3SetGroup } from './global';
 import { boundsToCoordinateBoundary } from './utils';
-import {
-  coordinatesArrayToH3Set,
-  latLngArrayToH3Set,
-  getH3SetFromCoordinateBoundary,
-} from './helpers';
+import { coordinatesArrayToH3Set, latLngArrayToH3Set } from './helpers';
 
 interface Ih3Map {
   resolution: number;
@@ -89,7 +85,7 @@ class H3Map implements Ih3Map {
       throw new Error('Failed to record bounds');
     }
 
-    return getH3SetFromCoordinateBoundary(pointBoundary, this.resolution);
+    return polyfill(pointBoundary, this.resolution);
   }
 
   // returns a set of h3 indexs grouped by type
