@@ -1,14 +1,13 @@
 import { geoToH3, polyfill } from 'h3-js';
-import { ILatLng, IBounds, H3Set, Coordinates, H3SetGroup } from './global';
-import { boundsToCoordinateBoundary } from './utils';
+import { Coordinates, H3Set, H3SetGroup } from './global';
 
 interface Ih3Map {
   resolution: number;
-  userPosition?: ILatLng | null;
-  bounds?: IBounds | null;
-  focus?: ILatLng[] | null;
+  userPosition?: Coordinates | null;
+  bounds: Coordinates[] | null;
+  focus: Coordinates[] | null;
   getUserH3Set(): H3Set;
-  getBackgroundH3Set(arg0: IBounds): H3Set;
+  getBackgroundH3Set(arg0: Coordinates[] | null): H3Set;
   getFocusH3Set(arg0: Coordinates[] | null): H3Set;
   getDistinctSetGroup(): H3SetGroup;
 }
@@ -16,17 +15,17 @@ interface Ih3Map {
 class H3Map implements Ih3Map {
   resolution: number;
 
-  userPosition: ILatLng | null;
+  userPosition: Coordinates | null;
 
-  bounds: IBounds | null;
+  bounds: Coordinates[] | null;
 
-  focus: ILatLng[] | null;
+  focus: Coordinates[] | null;
 
   constructor(
     _resolution: number,
-    _userPosition: ILatLng | null,
-    _bounds: IBounds | null,
-    _focus: ILatLng[] | null
+    _userPosition: Coordinates | null,
+    _bounds: Coordinates[] | null,
+    _focus: Coordinates[] | null
   ) {
     if (!_resolution) throw new Error('Resolution is not defined');
     this.resolution = _resolution;
@@ -38,63 +37,58 @@ class H3Map implements Ih3Map {
   }
 
   // return h3 index of user position formatted as array
-  getUserH3Set() {
+  getUserH3Set(): H3Set {
     if (!this.userPosition) throw new Error('User position is not defined');
     if (
-      Number.isNaN(this.userPosition.lat) ||
-      Number.isNaN(!this.userPosition.lng)
+      Number.isNaN(this.userPosition[0]) ||
+      Number.isNaN(!this.userPosition[0])
     ) {
       throw new Error('User position is not valid');
     }
 
     return [
-      geoToH3(this.userPosition.lat, this.userPosition.lng, this.resolution),
+      geoToH3(this.userPosition[0], this.userPosition[0], this.resolution),
     ];
   }
 
   // return h3 index set from an array of coordinates
-  getFocusH3Set(focusCoordinates: Coordinates[] | null = null) {
+  getFocusH3Set(focusCoordinates: Coordinates[] | null = null): H3Set {
     if (!focusCoordinates && !this.focus) {
       throw new Error('Must specify focus coordinates');
     }
-    let focusH3Set = null;
 
     if (focusCoordinates) {
-      focusH3Set = focusCoordinates.map((point) =>
+      return focusCoordinates.map((point) =>
         geoToH3(point[0], point[1], this.resolution)
       );
+      // eslint-disable-next-line no-else-return
     } else if (this.focus) {
-      focusH3Set = this.focus.map((point) =>
-        geoToH3(point.lat, point.lng, this.resolution)
+      return this.focus.map((point) =>
+        geoToH3(point[0], point[1], this.resolution)
       );
     } else {
       throw new Error('Failed to record focus coordinates');
     }
-
-    return focusH3Set;
   }
 
   // return h3 index set that fit within geo boundary
-  getBackgroundH3Set(currentBounds: IBounds | null = null) {
+  getBackgroundH3Set(currentBounds: Coordinates[] | null = null): H3Set {
     if (!currentBounds && !this.bounds) {
       throw new Error('Must specify bounds');
     }
 
-    // convert google formatted {ne, sw} boundary points into coordinates array
-    let pointBoundary = null;
     if (currentBounds) {
-      pointBoundary = boundsToCoordinateBoundary(currentBounds);
+      return polyfill(currentBounds, this.resolution);
+      // eslint-disable-next-line no-else-return
     } else if (this.bounds) {
-      pointBoundary = boundsToCoordinateBoundary(this.bounds);
+      return polyfill(this.bounds, this.resolution);
     } else {
       throw new Error('Failed to record bounds');
     }
-
-    return polyfill(pointBoundary, this.resolution);
   }
 
   // returns a set of h3 indexs grouped by type
-  getDistinctSetGroup() {
+  getDistinctSetGroup(): H3SetGroup {
     const groupSet = new Set();
     const group: H3SetGroup = {
       background: [],
