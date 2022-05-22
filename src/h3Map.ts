@@ -1,7 +1,6 @@
 import { geoToH3, polyfill } from 'h3-js';
 import { ILatLng, IBounds, H3Set, Coordinates, H3SetGroup } from './global';
 import { boundsToCoordinateBoundary } from './utils';
-import { coordinatesArrayToH3Set, latLngArrayToH3Set } from './helpers';
 
 interface Ih3Map {
   resolution: number;
@@ -58,15 +57,21 @@ class H3Map implements Ih3Map {
     if (!focusCoordinates && !this.focus) {
       throw new Error('Must specify focus coordinates');
     }
+    let focusH3Set = null;
 
     if (focusCoordinates) {
-      return coordinatesArrayToH3Set(focusCoordinates, this.resolution);
-      // eslint-disable-next-line no-else-return
+      focusH3Set = focusCoordinates.map((point) =>
+        geoToH3(point[0], point[1], this.resolution)
+      );
     } else if (this.focus) {
-      return latLngArrayToH3Set(this.focus, this.resolution);
+      focusH3Set = this.focus.map((point) =>
+        geoToH3(point.lat, point.lng, this.resolution)
+      );
     } else {
       throw new Error('Failed to record focus coordinates');
     }
+
+    return focusH3Set;
   }
 
   // return h3 index set that fit within geo boundary
