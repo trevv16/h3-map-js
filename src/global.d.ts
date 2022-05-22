@@ -1,16 +1,22 @@
-type Coordinates = [number, number];
-type Polygon = Coordinates[];
-type MultiPolygon = Polygon[];
+export type Coordinates = [number, number];
+export type Polygon = Coordinates[];
+export type MultiPolygon = Polygon[];
 
-interface IBounds {
+export interface IBounds {
   ne: Coordinates;
   sw: Coordinates;
 }
 
-interface ILatLng {
+export interface ILatLng {
   lat: number;
   lng: number;
 }
 
-type H3Index = string;
-type H3Set = H3Index[];
+export type H3Index = string;
+export type H3Set = H3Index[];
+
+export interface H3SetGroup {
+  background: H3Set;
+  focus: H3Set;
+  user: H3Set;
+}
