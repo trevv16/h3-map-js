@@ -7,13 +7,17 @@ Version](https://img.shields.io/badge/h3-v3.7.2-blue.svg)](https://github.com/ub
 
 <!-- badges: end -->
 
-A utility built with uber/h3-js to define the context of a map and manipulate its sub components
+[![Usage of uber/h3](https://1fykyq3mdn5r21tpna3wkdyi-wpengine.netdna-ssl.com/wp-content/uploads/2018/06/image13-e1529950174302.png 'Shiprock, New Mexico by Beau Rogers')](https://eng.uber.com/h3/)
+
+The goal of this project is to provide a proper workflow for working with [uber/h3](https://github.com/uber/h3) by using the h3 API in the context of a map. H3 is a `Hexagonal hierarchical geospatial indexing system` created and used by uber most notably display surge regions on their app in the form of hexagons.
+
+If you want to use h3 in your map there are a few practices that will make your map render appropriatelly and life easier and this project aims to help you implement this feature sucessfully.
 
 ## Install
 
 `npm i h3-map-js`
 
-## Basic Usage
+## Getting Started
 
 ```javascript
 import H3Map from 'h3-map-js';
@@ -37,7 +41,9 @@ const focusPoints = [
 ];
 
 // instance of map at current context
-const mapContext = new H3Map(1, [0, 0], bounds, focusPoints);
+const mapResolution = 1;
+const userPosition = [0, 0];
+const mapContext = new H3Map(mapResolution, userPosition, bounds, focusPoints);
 
 // get user position h3 index
 mapContext.getUserH3Set();
